@@ -254,6 +254,19 @@ namespace UnityEngine.Rendering.HighDefinition
             High
         }
 
+        /// <summary>
+        /// DLSS Override bit masks.
+        /// </summary>
+        public enum OverrideDLSSParametersFlags
+        {
+            /// <summary>Override use optimal settings parameter.</summary>
+            UseOptimalSettings = 1 << 0,
+            /// <summary>Override quality settings parameter.</summary>
+            QualitySettings    = 1 << 1,
+            /// <summary>Sharpening parameter.</summary>
+            Sharpening         = 1 << 2
+        }
+
         /// <summary>Clear mode for the camera background.</summary>
         public ClearColorMode clearColorMode = ClearColorMode.Sky;
         /// <summary>HDR color used for clearing the camera background.</summary>
@@ -330,6 +343,44 @@ namespace UnityEngine.Rendering.HighDefinition
 
         /// <summary>Enable to retain history buffers even if the camera is disabled.</summary>
         public bool hasPersistentHistory = false;
+
+        /// <summary>Gets wether the camera should use the DLSS parameter in the camera instead of the quality settings.</summary>
+        public bool CanUseDLSSParameter(OverrideDLSSParametersFlags param) { return ((uint)param & deepLearningSuperSamplingOverrideFlags) != 0; }
+
+        /// <summary>
+        /// Enables / Disables the parameter specified to be used.
+        /// If set to true, the camera will use the parameter from this structure instead of the one set in the HDRP quality asset.
+        ///</summary>
+        public void SetDLSSParameterOverride(OverrideDLSSParametersFlags param, bool overrideState)
+        {
+            if (overrideState)
+                deepLearningSuperSamplingOverrideFlags |= (uint)param;
+            else
+                deepLearningSuperSamplingOverrideFlags &= ~(uint)param;
+        }
+
+        /// <summary>Enables Deep Learning Super Sampling on this camera.</summary>
+        [Tooltip("Allow Deep Learning Super Sampling on this camera")]
+        public bool allowDeepLearningSuperSampling = true;
+
+        /// <summary>Override for Allow Deep Learning Super Sampling to use optimal settings.</summary>
+        [Tooltip("Allow Deep Learning Super Sampling Optimal Settings on this camera")]
+        public bool allowDeepLearningSuperSamplingOptimalSettings = true;
+
+        /// <summary>Allows Deep Learning Super Sampling to use optimal settings.</summary>
+        [Tooltip("Quality value for deep learning super sampling")]
+        public uint deepLearningSuperSamplingQuality = 0;
+
+        /// <summary>Allows Deep Learning Super Sampling to use optimal settings.</summary>
+        [Tooltip("Sharpening value for deep learning super sampling")]
+        [Range(0, 1)]
+        public float deepLearningSuperSamplingSharpening = 0;
+
+        /// <summary>Override flags parameters to be used by camera for deep learning super sampling.</summary>
+        [Tooltip("Override flags parameters to be used by camera for deep learning super sampling.")]
+        public uint deepLearningSuperSamplingOverrideFlags = 0;
+
+        internal bool cameraCanRenderDLSS = false;
 
         /// <summary>Event used to override HDRP rendering for this particular camera.</summary>
         public event Action<ScriptableRenderContext, HDCamera> customRender;

@@ -30,6 +30,12 @@ namespace UnityEditor.Rendering.HighDefinition
         public SerializedProperty anamorphism;
         public SerializedProperty exposureTarget;
 
+        public SerializedProperty allowDeepLearningSuperSampling;
+        public SerializedProperty allowDeepLearningSuperSamplingOptimalSettings;
+        public SerializedProperty deepLearningSuperSamplingQuality;
+        public SerializedProperty deepLearningSuperSamplingSharpening;
+        public SerializedProperty deepLearningSuperSamplingOverrideFlags;
+
         public SerializedProperty SMAAQuality;
         public SerializedProperty taaSharpenStrength;
         public SerializedProperty taaHistorySharpening;
@@ -80,6 +86,12 @@ namespace UnityEditor.Rendering.HighDefinition
             anamorphism = serializedAdditionalDataObject.FindProperty("physicalParameters.m_Anamorphism");
 
             exposureTarget = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.exposureTarget);
+
+            allowDeepLearningSuperSampling = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.allowDeepLearningSuperSampling);
+            allowDeepLearningSuperSamplingOptimalSettings = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.allowDeepLearningSuperSamplingOptimalSettings);
+            deepLearningSuperSamplingQuality = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingQuality);
+            deepLearningSuperSamplingSharpening = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingSharpening);
+            deepLearningSuperSamplingOverrideFlags = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingOverrideFlags);
 
             SMAAQuality = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.SMAAQuality);
             taaSharpenStrength = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.taaSharpenStrength);

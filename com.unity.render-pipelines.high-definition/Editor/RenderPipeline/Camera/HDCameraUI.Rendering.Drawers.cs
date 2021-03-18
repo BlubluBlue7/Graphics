@@ -39,17 +39,109 @@ namespace UnityEditor.Rendering.HighDefinition
                 )
             );
 
+#if ENABLE_NVIDIA_MODULE
+            static void DrawDLSSControl(SerializedHDCamera p, Editor owner, out bool showAntialiasContentAsFallback, out bool doGlobalIndent)
+            {
+                showAntialiasContentAsFallback = false;
+                doGlobalIndent = false;
+
+                if (!p.allowDynamicResolution.boolValue)
+                    return;
+
+                bool isDLSSEnabledInQualityAsset = HDRenderPipeline.currentAsset.currentPlatformRenderPipelineSettings.dynamicResolutionSettings.enableDLSS;
+
+                EditorGUILayout.PropertyField(p.allowDeepLearningSuperSampling, Styles.DLSSAllow);
+                if (!isDLSSEnabledInQualityAsset && p.allowDeepLearningSuperSampling.boolValue)
+                {
+                    EditorGUILayout.HelpBox(Styles.DLSSNotEnabledInQualityAsset, MessageType.Info);
+                }
+
+                bool DrawOverrideButton(ref int flags, GUIContent content, HDAdditionalCameraData.OverrideDLSSParametersFlags paramFlag, SerializedProperty property, out Rect rect)
+                {
+                    bool isFlagSet = (flags & (int)paramFlag) != 0;
+                    float height = EditorGUI.GetPropertyHeight(property) + EditorGUIUtility.standardVerticalSpacing;
+                    rect = GUILayoutUtility.GetRect(content, CoreEditorStyles.miniLabelButton, GUILayout.Height(height), GUILayout.ExpandWidth(false));
+                    rect.yMin += EditorGUIUtility.standardVerticalSpacing * 2.0f;
+                    rect.yMax -= EditorGUIUtility.standardVerticalSpacing;
+                    bool val = GUI.Toggle(rect, isFlagSet, Styles.overrideSettingText, CoreEditorStyles.smallTickbox);
+                    rect = GUILayoutUtility.GetRect(content, CoreEditorStyles.miniLabelButton);
+                    rect.yMax += height * 0.5f;
+                    rect.position = new Vector2(rect.position.x, rect.position.y - height);
+                    if (val)
+                        flags |= (int)paramFlag;
+                    else
+                        flags &= ~(int)paramFlag;
+                    return !val;
+                }
+
+                using (new EditorGUI.DisabledScope(!p.allowDeepLearningSuperSampling.boolValue))
+                {
+                    Rect dlssRect;
+                    int overrideFlags = p.deepLearningSuperSamplingOverrideFlags.intValue;
+                    using (new EditorGUI.DisabledScope(DrawOverrideButton(ref overrideFlags, HDRenderPipelineUI.Styles.DLSSQualitySettingContent, HDAdditionalCameraData.OverrideDLSSParametersFlags.QualitySettings, p.deepLearningSuperSamplingQuality, out dlssRect)))
+                    {
+                        EditorGUI.BeginProperty(dlssRect, HDRenderPipelineUI.Styles.DLSSQualitySettingContent, p.deepLearningSuperSamplingQuality);
+                        {
+                            EditorGUI.BeginChangeCheck();
+                            int selectedVal = EditorGUI.Popup(dlssRect, HDRenderPipelineUI.Styles.DLSSQualitySettingContent, p.deepLearningSuperSamplingQuality.intValue, HDRenderPipelineUI.Styles.DLSSPerfQualityNames);
+                            if (EditorGUI.EndChangeCheck())
+                                p.deepLearningSuperSamplingQuality.intValue = selectedVal;
+                        }
+                    }
+
+                    using (new EditorGUI.DisabledScope(DrawOverrideButton(ref overrideFlags, HDRenderPipelineUI.Styles.DLSSUseOptimalSettingsContent, HDAdditionalCameraData.OverrideDLSSParametersFlags.UseOptimalSettings, p.allowDeepLearningSuperSamplingOptimalSettings, out dlssRect)))
+                    {
+                        EditorGUI.PropertyField(dlssRect, p.allowDeepLearningSuperSamplingOptimalSettings, HDRenderPipelineUI.Styles.DLSSUseOptimalSettingsContent);
+                    }
+
+                    using (new EditorGUI.DisabledScope(DrawOverrideButton(ref overrideFlags, HDRenderPipelineUI.Styles.DLSSSharpnessContent, HDAdditionalCameraData.OverrideDLSSParametersFlags.Sharpening, p.deepLearningSuperSamplingSharpening, out dlssRect)))
+                    {
+                        EditorGUI.PropertyField(dlssRect, p.deepLearningSuperSamplingSharpening, HDRenderPipelineUI.Styles.DLSSSharpnessContent);
+                    }
+
+                    p.deepLearningSuperSamplingOverrideFlags.intValue = overrideFlags;
+                }
+
+                bool isDLSSEnabled = isDLSSEnabledInQualityAsset && p.allowDeepLearningSuperSampling.boolValue;
+                doGlobalIndent = isDLSSEnabled;
+                if (isDLSSEnabled)
+                {
+                    showAntialiasContentAsFallback = true;
+                    bool featureDetected = HDDynamicResolutionPlatformCapabilities.DLSSDetected;
+
+                    //write here support string for dlss upscaler
+                    EditorGUILayout.HelpBox(
+                        featureDetected ? Styles.DLSSFeatureDetectedMsg : Styles.DLSSFeatureNotDetectedMsg,
+                        featureDetected ? MessageType.Info : MessageType.Warning);
+                }
+            }
+
+#endif
+
             static void Drawer_Rendering_Antialiasing(SerializedHDCamera p, Editor owner)
             {
+                bool doGlobalIndent = false;
+                bool showAntialiasContentAsFallback = false;
+
+#if ENABLE_NVIDIA_MODULE
+                DrawDLSSControl(p, owner, out showAntialiasContentAsFallback, out doGlobalIndent);
+#endif
+
+                if (doGlobalIndent)
+                    EditorGUI.indentLevel++;
+
                 Rect antiAliasingRect = EditorGUILayout.GetControlRect();
                 EditorGUI.BeginProperty(antiAliasingRect, Styles.antialiasing, p.antialiasing);
                 {
                     EditorGUI.BeginChangeCheck();
-                    int selectedValue = (int)(HDAdditionalCameraData.AntialiasingMode)EditorGUI.EnumPopup(antiAliasingRect, Styles.antialiasing, (HDAdditionalCameraData.AntialiasingMode)p.antialiasing.intValue);
+                    int selectedValue = (int)(HDAdditionalCameraData.AntialiasingMode)EditorGUI.EnumPopup(antiAliasingRect, showAntialiasContentAsFallback ? Styles.antialiasingContentFallback : Styles.antialiasing, (HDAdditionalCameraData.AntialiasingMode)p.antialiasing.intValue);
+
                     if (EditorGUI.EndChangeCheck())
                         p.antialiasing.intValue = selectedValue;
                 }
-                EditorGUI.EndProperty();
+
+                if (doGlobalIndent)
+                    EditorGUI.indentLevel--;
             }
 
             static CED.IDrawer AntialiasingModeDrawer(HDAdditionalCameraData.AntialiasingMode antialiasingMode, CED.ActionDrawer antialiasingDrawer)
