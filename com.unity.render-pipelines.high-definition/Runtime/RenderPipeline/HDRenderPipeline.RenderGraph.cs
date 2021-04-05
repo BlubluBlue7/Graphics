@@ -1654,7 +1654,6 @@ namespace UnityEngine.Rendering.HighDefinition
             using (var builder = renderGraph.AddRenderPass<UpdatePostProcessScreenSizePassData>("Update RT Handle Scales CB", out var passData))
             {
                 passData.hdCamera = hdCamera;
-                hdCamera.SetPostProcessScreenSize(postProcessWidth, postProcessHeight);
                 passData.shaderVariablesGlobal = m_ShaderVariablesGlobalCB;
                 passData.postProcessWidth  = postProcessWidth;
                 passData.postProcessHeight = postProcessHeight;
