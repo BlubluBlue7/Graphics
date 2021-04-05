@@ -463,6 +463,7 @@ namespace UnityEditor.Rendering.HighDefinition
 
                 if (serialized.renderPipelineSettings.dynamicResolutionSettings.enableDLSS.boolValue)
                 {
+                    ++EditorGUI.indentLevel;
                     Rect dlssRect = EditorGUILayout.GetControlRect();
                     EditorGUI.BeginProperty(dlssRect, Styles.DLSSQualitySettingContent, serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting);
                     {
@@ -475,12 +476,9 @@ namespace UnityEditor.Rendering.HighDefinition
 
                     using (new EditorGUI.DisabledScope(serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSUseOptimalSettings.boolValue))
                     {
-                        float DLSSSharpness = serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSSharpness.floatValue;
-                        EditorGUI.BeginChangeCheck();
-                        DLSSSharpness = EditorGUILayout.DelayedFloatField(Styles.DLSSSharpnessContent, DLSSSharpness);
-                        if (EditorGUI.EndChangeCheck())
-                            serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSSharpness.floatValue = Mathf.Clamp(DLSSSharpness, 0.0f, 1.0f);
+                        EditorGUILayout.PropertyField(serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSSharpness, Styles.DLSSSharpnessContent);
                     }
+                    --EditorGUI.indentLevel;
                 }
 
                 showUpsampleFilterAsFallback = serialized.renderPipelineSettings.dynamicResolutionSettings.enableDLSS.boolValue;

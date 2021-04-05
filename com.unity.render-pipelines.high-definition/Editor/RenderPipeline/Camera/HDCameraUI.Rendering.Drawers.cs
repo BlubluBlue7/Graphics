@@ -56,30 +56,14 @@ namespace UnityEditor.Rendering.HighDefinition
                     EditorGUILayout.HelpBox(Styles.DLSSNotEnabledInQualityAsset, MessageType.Info);
                 }
 
-                bool DrawOverrideButton(ref int flags, GUIContent content, HDAdditionalCameraData.OverrideDLSSParametersFlags paramFlag, SerializedProperty property, out Rect rect)
+                if (p.allowDeepLearningSuperSampling.boolValue)
                 {
-                    bool isFlagSet = (flags & (int)paramFlag) != 0;
-                    float height = EditorGUI.GetPropertyHeight(property) + EditorGUIUtility.standardVerticalSpacing;
-                    rect = GUILayoutUtility.GetRect(content, CoreEditorStyles.miniLabelButton, GUILayout.Height(height), GUILayout.ExpandWidth(false));
-                    rect.yMin += EditorGUIUtility.standardVerticalSpacing * 2.0f;
-                    rect.yMax -= EditorGUIUtility.standardVerticalSpacing;
-                    bool val = GUI.Toggle(rect, isFlagSet, Styles.overrideSettingText, CoreEditorStyles.smallTickbox);
-                    rect = GUILayoutUtility.GetRect(content, CoreEditorStyles.miniLabelButton);
-                    rect.yMax += height * 0.5f;
-                    rect.position = new Vector2(rect.position.x, rect.position.y - height);
-                    if (val)
-                        flags |= (int)paramFlag;
-                    else
-                        flags &= ~(int)paramFlag;
-                    return !val;
-                }
-
-                using (new EditorGUI.DisabledScope(!p.allowDeepLearningSuperSampling.boolValue))
-                {
-                    Rect dlssRect;
-                    int overrideFlags = p.deepLearningSuperSamplingOverrideFlags.intValue;
-                    using (new EditorGUI.DisabledScope(DrawOverrideButton(ref overrideFlags, HDRenderPipelineUI.Styles.DLSSQualitySettingContent, HDAdditionalCameraData.OverrideDLSSParametersFlags.QualitySettings, p.deepLearningSuperSamplingQuality, out dlssRect)))
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseCameraQualitySettings, Styles.DLSSUseCameraQualitySettings);
+                    if (p.deepLearningSuperSamplingUseCameraQualitySettings.boolValue)
                     {
+                        EditorGUI.indentLevel++;
+                        var dlssRect = EditorGUILayout.GetControlRect();
                         EditorGUI.BeginProperty(dlssRect, HDRenderPipelineUI.Styles.DLSSQualitySettingContent, p.deepLearningSuperSamplingQuality);
                         {
                             EditorGUI.BeginChangeCheck();
@@ -87,19 +71,21 @@ namespace UnityEditor.Rendering.HighDefinition
                             if (EditorGUI.EndChangeCheck())
                                 p.deepLearningSuperSamplingQuality.intValue = selectedVal;
                         }
+                        EditorGUI.indentLevel--;
                     }
 
-                    using (new EditorGUI.DisabledScope(DrawOverrideButton(ref overrideFlags, HDRenderPipelineUI.Styles.DLSSUseOptimalSettingsContent, HDAdditionalCameraData.OverrideDLSSParametersFlags.UseOptimalSettings, p.allowDeepLearningSuperSamplingOptimalSettings, out dlssRect)))
+                    EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseCameraAttributeSettings, Styles.DLSSUseCameraAttributes);
+                    if (p.deepLearningSuperSamplingUseCameraAttributeSettings.boolValue)
                     {
-                        EditorGUI.PropertyField(dlssRect, p.allowDeepLearningSuperSamplingOptimalSettings, HDRenderPipelineUI.Styles.DLSSUseOptimalSettingsContent);
+                        EditorGUI.indentLevel++;
+                        EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseOptimalSettings, HDRenderPipelineUI.Styles.DLSSUseOptimalSettingsContent);
+                        using (new EditorGUI.DisabledScope(p.deepLearningSuperSamplingUseOptimalSettings.boolValue))
+                        {
+                            EditorGUILayout.PropertyField(p.deepLearningSuperSamplingSharpening, HDRenderPipelineUI.Styles.DLSSSharpnessContent);
+                        }
+                        EditorGUI.indentLevel--;
                     }
-
-                    using (new EditorGUI.DisabledScope(DrawOverrideButton(ref overrideFlags, HDRenderPipelineUI.Styles.DLSSSharpnessContent, HDAdditionalCameraData.OverrideDLSSParametersFlags.Sharpening, p.deepLearningSuperSamplingSharpening, out dlssRect)))
-                    {
-                        EditorGUI.PropertyField(dlssRect, p.deepLearningSuperSamplingSharpening, HDRenderPipelineUI.Styles.DLSSSharpnessContent);
-                    }
-
-                    p.deepLearningSuperSamplingOverrideFlags.intValue = overrideFlags;
+                    EditorGUI.indentLevel--;
                 }
 
                 bool isDLSSEnabled = isDLSSEnabledInQualityAsset && p.allowDeepLearningSuperSampling.boolValue;

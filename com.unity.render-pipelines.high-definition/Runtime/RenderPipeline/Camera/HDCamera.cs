@@ -647,18 +647,12 @@ namespace UnityEngine.Rendering.HighDefinition
             return m_AdditionalCameraData == null ? false : m_AdditionalCameraData.cameraCanRenderDLSS;
         }
 
-        internal uint DLSSOverrideFlags => m_AdditionalCameraData == null ? 0 : m_AdditionalCameraData.deepLearningSuperSamplingOverrideFlags;
         internal bool allowDeepLearningSuperSampling => m_AdditionalCameraData == null ? false : m_AdditionalCameraData.allowDeepLearningSuperSampling;
+        internal bool deepLearningSuperSamplingUseCameraQualitySettings => m_AdditionalCameraData == null ? false : m_AdditionalCameraData.deepLearningSuperSamplingUseCameraQualitySettings;
         internal uint deepLearningSuperSamplingQuality => m_AdditionalCameraData == null ? 0 : m_AdditionalCameraData.deepLearningSuperSamplingQuality;
+        internal bool deepLearningSuperSamplingUseCameraAttributeSettings => m_AdditionalCameraData == null ? false : m_AdditionalCameraData.deepLearningSuperSamplingUseCameraAttributeSettings;
+        internal bool deepLearningSuperSamplingUseOptimalSettings => m_AdditionalCameraData == null ? false : m_AdditionalCameraData.deepLearningSuperSamplingUseOptimalSettings;
         internal float deepLearningSuperSamplingSharpening => m_AdditionalCameraData == null ? 0.0f : m_AdditionalCameraData.deepLearningSuperSamplingSharpening;
-        internal bool allowDeepLearningSuperSamplingOptimalSettings => m_AdditionalCameraData == null ? false : m_AdditionalCameraData.allowDeepLearningSuperSamplingOptimalSettings;
-        internal bool CanUseDLSSParameter(HDAdditionalCameraData.OverrideDLSSParametersFlags param)
-        {
-            if (m_AdditionalCameraData == null)
-                return false;
-
-            return m_AdditionalCameraData.CanUseDLSSParameter(param);
-        }
 
         internal bool RequiresCameraJitter()
         {

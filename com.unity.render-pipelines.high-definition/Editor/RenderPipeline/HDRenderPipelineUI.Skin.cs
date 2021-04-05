@@ -242,10 +242,10 @@ namespace UnityEditor.Rendering.HighDefinition
             public static readonly GUIContent filteringQuality = EditorGUIUtility.TrTextContent("Filtering Quality", "Specifies the quality of shadows. See the documentation for details on the algorithm HDRP uses for each preset. (Unsupported in Deferred Only)");
 
             public static readonly GUIContent enabled = EditorGUIUtility.TrTextContent("Enable", "When enabled, HDRP dynamically lowers the resolution of render targets to reduce the workload on the GPU.");
-            public static readonly GUIContent enableDLSS = EditorGUIUtility.TrTextContent("Enable NVIDIA Deep Learning Super Sampling", "Enables NVIDIA Deep Learning Super Sampling.");
-            public static readonly GUIContent DLSSQualitySettingContent = EditorGUIUtility.TrTextContent("NVIDIA DLSS Performance Quality", "Selects a performance quality setting for NVIDIA Deep Learning Super Sampling.");
-            public static readonly GUIContent DLSSUseOptimalSettingsContent = EditorGUIUtility.TrTextContent("NVIDIA DLSS Use Optimal Settings", "Sets the sharpness and scale automatically, depending on the values of quality settings.");
-            public static readonly GUIContent DLSSSharpnessContent = EditorGUIUtility.TrTextContent("NVIDIA DLSS Sharpness", "NVIDIA Deep Learning Super Sampling pixel sharpness of upsampler.");
+            public static readonly GUIContent enableDLSS = EditorGUIUtility.TrTextContent("Enable DLSS", "Enables NVIDIA Deep Learning Super Sampling (DLSS).");
+            public static readonly GUIContent DLSSQualitySettingContent = EditorGUIUtility.TrTextContent("Performance Quality", "Selects a performance quality setting for NVIDIA Deep Learning Super Sampling (DLSS).");
+            public static readonly GUIContent DLSSUseOptimalSettingsContent = EditorGUIUtility.TrTextContent("Use Optimal Settings", "Sets the sharpness and scale automatically for NVIDIA Deep Learning Super Sampling, depending on the values of quality settings.");
+            public static readonly GUIContent DLSSSharpnessContent = EditorGUIUtility.TrTextContent("Sharpness", "NVIDIA Deep Learning Super Sampling pixel sharpness of upsampler. This setting is ignored if use optimal settings is used");
             public static readonly GUIContent[] DLSSPerfQualityNames =
             {
                 new GUIContent("Maximum Performance"),

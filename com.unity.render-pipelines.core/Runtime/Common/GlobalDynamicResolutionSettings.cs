@@ -69,6 +69,7 @@ namespace UnityEngine.Rendering
         public bool DLSSUseOptimalSettings;
 
         /// <summary>Shaprness of NVIDIA Deep Leraning Super Sampling Upsampler.</summary>
+        [Range(0, 1)]
         public float DLSSSharpness;
 
         /// <summary>The maximum resolution percentage that dynamic resolution can reach.</summary>
