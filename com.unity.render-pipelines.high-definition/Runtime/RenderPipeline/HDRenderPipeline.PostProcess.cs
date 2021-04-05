@@ -2458,8 +2458,8 @@ namespace UnityEngine.Rendering.HighDefinition
             using (new ProfilingScope(cmd, ProfilingSampler.Get(HDProfileId.DepthOfFieldDilate)))
             {
                 int tileSize = dofParameters.minMaxCoCTileSize;
-                int tx = ((dofParameters.camera.actualWidth / tileSize) + 7) / 8;
-                int ty = ((dofParameters.camera.actualHeight / tileSize) + 7) / 8;
+                int tx = ((dofParameters.viewportSize.x / tileSize) + 7) / 8;
+                int ty = ((dofParameters.viewportSize.y / tileSize) + 7) / 8;
 
                 // Min Max CoC tiles
                 {
