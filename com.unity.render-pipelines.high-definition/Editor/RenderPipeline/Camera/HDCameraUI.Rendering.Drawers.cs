@@ -73,14 +73,11 @@ namespace UnityEditor.Rendering.HighDefinition
                     if (p.deepLearningSuperSamplingUseCustomQualitySettings.boolValue)
                     {
                         EditorGUI.indentLevel++;
-                        var dlssRect = EditorGUILayout.GetControlRect();
-                        EditorGUI.BeginProperty(dlssRect, HDRenderPipelineUI.Styles.DLSSQualitySettingContent, p.deepLearningSuperSamplingQuality);
-                        {
-                            EditorGUI.BeginChangeCheck();
-                            int selectedVal = EditorGUI.Popup(dlssRect, HDRenderPipelineUI.Styles.DLSSQualitySettingContent, p.deepLearningSuperSamplingQuality.intValue, HDRenderPipelineUI.Styles.DLSSPerfQualityNames);
-                            if (EditorGUI.EndChangeCheck())
-                                p.deepLearningSuperSamplingQuality.intValue = selectedVal;
-                        }
+                        var v = EditorGUILayout.EnumPopup(
+                            HDRenderPipelineUI.Styles.DLSSQualitySettingContent,
+                            (Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value)
+                            p.deepLearningSuperSamplingQuality.intValue);
+                        p.deepLearningSuperSamplingQuality.intValue = (int)(object)v;
                         EditorGUI.indentLevel--;
                     }
 

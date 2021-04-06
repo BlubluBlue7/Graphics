@@ -465,13 +465,12 @@ namespace UnityEditor.Rendering.HighDefinition
                 if (serialized.renderPipelineSettings.dynamicResolutionSettings.enableDLSS.boolValue)
                 {
                     ++EditorGUI.indentLevel;
-                    Rect dlssRect = EditorGUILayout.GetControlRect();
-                    EditorGUI.BeginProperty(dlssRect, Styles.DLSSQualitySettingContent, serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting);
-                    {
-                        int selectedVal = EditorGUI.Popup(dlssRect, Styles.DLSSQualitySettingContent, serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting.intValue, Styles.DLSSPerfQualityNames);
-                        if (EditorGUI.EndChangeCheck())
-                            serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting.intValue = selectedVal;
-                    }
+                    var v = EditorGUILayout.EnumPopup(
+                        Styles.DLSSQualitySettingContent,
+                        (Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value)
+                        serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting.intValue);
+
+                    serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting.intValue = (int)(object)v;
 
                     EditorGUILayout.PropertyField(serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSUseOptimalSettings, Styles.DLSSUseOptimalSettingsContent);
 
