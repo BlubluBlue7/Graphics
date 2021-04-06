@@ -31,9 +31,9 @@ namespace UnityEditor.Rendering.HighDefinition
         public SerializedProperty exposureTarget;
 
         public SerializedProperty allowDeepLearningSuperSampling;
-        public SerializedProperty deepLearningSuperSamplingUseCameraQualitySettings;
+        public SerializedProperty deepLearningSuperSamplingUseCustomQualitySettings;
         public SerializedProperty deepLearningSuperSamplingQuality;
-        public SerializedProperty deepLearningSuperSamplingUseCameraAttributeSettings;
+        public SerializedProperty deepLearningSuperSamplingUseCustomAttributes;
         public SerializedProperty deepLearningSuperSamplingUseOptimalSettings;
         public SerializedProperty deepLearningSuperSamplingSharpening;
 
@@ -89,9 +89,9 @@ namespace UnityEditor.Rendering.HighDefinition
             exposureTarget = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.exposureTarget);
 
             allowDeepLearningSuperSampling = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.allowDeepLearningSuperSampling);
-            deepLearningSuperSamplingUseCameraQualitySettings = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingUseCameraQualitySettings);
+            deepLearningSuperSamplingUseCustomQualitySettings = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingUseCustomQualitySettings);
             deepLearningSuperSamplingQuality = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingQuality);
-            deepLearningSuperSamplingUseCameraAttributeSettings = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingUseCameraAttributeSettings);
+            deepLearningSuperSamplingUseCustomAttributes = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingUseCustomAttributes);
             deepLearningSuperSamplingUseOptimalSettings = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingUseOptimalSettings);
             deepLearningSuperSamplingSharpening = serializedAdditionalDataObject.Find((HDAdditionalCameraData d) => d.deepLearningSuperSamplingSharpening);
 

@@ -16,6 +16,7 @@ namespace UnityEditor.Rendering.HighDefinition
                 k_ExpandedState,
                 FoldoutOption.Indent,
                 CED.Group(
+                    Drawer_Rendering_AllowDynamicResolution,
                     Drawer_Rendering_Antialiasing
                     ),
                 AntialiasingModeDrawer(
@@ -39,12 +40,21 @@ namespace UnityEditor.Rendering.HighDefinition
                 )
             );
 
-#if ENABLE_NVIDIA_MODULE
-            static void DrawDLSSControl(SerializedHDCamera p, Editor owner, out bool showAntialiasContentAsFallback, out bool doGlobalIndent)
+            static void Drawer_Rendering_AllowDynamicResolution(SerializedHDCamera p, Editor owner)
             {
-                showAntialiasContentAsFallback = false;
-                doGlobalIndent = false;
+                EditorGUILayout.PropertyField(p.allowDynamicResolution, Styles.allowDynamicResolution);
+                p.baseCameraSettings.allowDynamicResolution.boolValue = p.allowDynamicResolution.boolValue;
 
+#if ENABLE_NVIDIA_MODULE
+                EditorGUI.indentLevel++;
+                Drawer_Draw_DLSS_Section(p, owner);
+                EditorGUI.indentLevel--;
+#endif
+            }
+
+#if ENABLE_NVIDIA_MODULE
+            static void Drawer_Draw_DLSS_Section(SerializedHDCamera p, Editor owner)
+            {
                 if (!p.allowDynamicResolution.boolValue)
                     return;
 
@@ -59,8 +69,8 @@ namespace UnityEditor.Rendering.HighDefinition
                 if (p.allowDeepLearningSuperSampling.boolValue)
                 {
                     EditorGUI.indentLevel++;
-                    EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseCameraQualitySettings, Styles.DLSSUseCameraQualitySettings);
-                    if (p.deepLearningSuperSamplingUseCameraQualitySettings.boolValue)
+                    EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseCustomQualitySettings, Styles.DLSSCustomQualitySettings);
+                    if (p.deepLearningSuperSamplingUseCustomQualitySettings.boolValue)
                     {
                         EditorGUI.indentLevel++;
                         var dlssRect = EditorGUILayout.GetControlRect();
@@ -74,8 +84,8 @@ namespace UnityEditor.Rendering.HighDefinition
                         EditorGUI.indentLevel--;
                     }
 
-                    EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseCameraAttributeSettings, Styles.DLSSUseCameraAttributes);
-                    if (p.deepLearningSuperSamplingUseCameraAttributeSettings.boolValue)
+                    EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseCustomAttributes, Styles.DLSSUseCustomAttributes);
+                    if (p.deepLearningSuperSamplingUseCustomAttributes.boolValue)
                     {
                         EditorGUI.indentLevel++;
                         EditorGUILayout.PropertyField(p.deepLearningSuperSamplingUseOptimalSettings, HDRenderPipelineUI.Styles.DLSSUseOptimalSettingsContent);
@@ -89,10 +99,8 @@ namespace UnityEditor.Rendering.HighDefinition
                 }
 
                 bool isDLSSEnabled = isDLSSEnabledInQualityAsset && p.allowDeepLearningSuperSampling.boolValue;
-                doGlobalIndent = isDLSSEnabled;
                 if (isDLSSEnabled)
                 {
-                    showAntialiasContentAsFallback = true;
                     bool featureDetected = HDDynamicResolutionPlatformCapabilities.DLSSDetected;
 
                     //write here support string for dlss upscaler
@@ -104,17 +112,16 @@ namespace UnityEditor.Rendering.HighDefinition
 
 #endif
 
+
             static void Drawer_Rendering_Antialiasing(SerializedHDCamera p, Editor owner)
             {
-                bool doGlobalIndent = false;
                 bool showAntialiasContentAsFallback = false;
 
 #if ENABLE_NVIDIA_MODULE
-                DrawDLSSControl(p, owner, out showAntialiasContentAsFallback, out doGlobalIndent);
+                bool isDLSSEnabled = HDRenderPipeline.currentAsset.currentPlatformRenderPipelineSettings.dynamicResolutionSettings.enableDLSS
+                    && p.allowDeepLearningSuperSampling.boolValue;
+                showAntialiasContentAsFallback = isDLSSEnabled;
 #endif
-
-                if (doGlobalIndent)
-                    EditorGUI.indentLevel++;
 
                 Rect antiAliasingRect = EditorGUILayout.GetControlRect();
                 EditorGUI.BeginProperty(antiAliasingRect, Styles.antialiasing, p.antialiasing);
@@ -125,9 +132,6 @@ namespace UnityEditor.Rendering.HighDefinition
                     if (EditorGUI.EndChangeCheck())
                         p.antialiasing.intValue = selectedValue;
                 }
-
-                if (doGlobalIndent)
-                    EditorGUI.indentLevel--;
             }
 
             static CED.IDrawer AntialiasingModeDrawer(HDAdditionalCameraData.AntialiasingMode antialiasingMode, CED.ActionDrawer antialiasingDrawer)

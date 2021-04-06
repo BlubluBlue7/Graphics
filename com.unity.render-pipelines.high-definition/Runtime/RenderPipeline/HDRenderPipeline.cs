@@ -956,7 +956,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             if (m_DLSSPass != null && hdCam.cameraCanRenderDLSS)
             {
-                bool useOptimalSettings = hdCam.deepLearningSuperSamplingUseCameraAttributeSettings
+                bool useOptimalSettings = hdCam.deepLearningSuperSamplingUseCustomAttributes
                     ? hdCam.deepLearningSuperSamplingUseOptimalSettings
                     : m_Asset.currentPlatformRenderPipelineSettings.dynamicResolutionSettings.DLSSUseOptimalSettings;
                 m_DLSSPass.SetupAutomaticDRSScaling(useOptimalSettings, camera, xrPass, ref outDrsSettings);

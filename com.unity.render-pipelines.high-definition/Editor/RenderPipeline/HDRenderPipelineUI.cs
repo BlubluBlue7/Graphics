@@ -457,6 +457,7 @@ namespace UnityEditor.Rendering.HighDefinition
             ++EditorGUI.indentLevel;
 
 #if ENABLE_NVIDIA_MODULE
+            bool dlssDetected = HDDynamicResolutionPlatformCapabilities.DLSSDetected;
             if (serialized.renderPipelineSettings.dynamicResolutionSettings.enabled.boolValue)
             {
                 EditorGUILayout.PropertyField(serialized.renderPipelineSettings.dynamicResolutionSettings.enableDLSS, Styles.enableDLSS);
@@ -482,12 +483,11 @@ namespace UnityEditor.Rendering.HighDefinition
                 }
 
                 showUpsampleFilterAsFallback = serialized.renderPipelineSettings.dynamicResolutionSettings.enableDLSS.boolValue;
-                bool featureDetected = HDDynamicResolutionPlatformCapabilities.DLSSDetected;
                 if (serialized.renderPipelineSettings.dynamicResolutionSettings.enableDLSS.boolValue)
                 {
                     EditorGUILayout.HelpBox(
-                        featureDetected ? Styles.DLSSFeatureDetectedMsg : Styles.DLSSFeatureNotDetectedMsg,
-                        featureDetected ? MessageType.Info : MessageType.Warning);
+                        dlssDetected ? Styles.DLSSFeatureDetectedMsg : Styles.DLSSFeatureNotDetectedMsg,
+                        dlssDetected ? MessageType.Info : MessageType.Warning);
                 }
             }
 #endif

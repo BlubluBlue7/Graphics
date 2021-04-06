@@ -651,11 +651,11 @@ namespace UnityEngine.Rendering.HighDefinition
 
             dlssViewData.perfQuality =
                 (Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value)(
-                    parameters.hdCamera.deepLearningSuperSamplingUseCameraQualitySettings
+                    parameters.hdCamera.deepLearningSuperSamplingUseCustomQualitySettings
                     ? parameters.hdCamera.deepLearningSuperSamplingQuality
                     : parameters.drsSettings.DLSSPerfQualitySetting);
 
-            dlssViewData.sharpness = parameters.hdCamera.deepLearningSuperSamplingUseCameraAttributeSettings
+            dlssViewData.sharpness = parameters.hdCamera.deepLearningSuperSamplingUseCustomAttributes
                 ? parameters.hdCamera.deepLearningSuperSamplingSharpening
                 : parameters.drsSettings.DLSSSharpness;
 

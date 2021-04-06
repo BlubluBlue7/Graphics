@@ -31,12 +31,13 @@ namespace UnityEditor.Rendering.HighDefinition
                 public static readonly GUIContent fullScreenPassthrough = EditorGUIUtility.TrTextContent("Fullscreen Passthrough", "This will skip rendering settings to directly rendering in fullscreen(for instance: Useful for video)");
                 public static readonly GUIContent exposureTarget = EditorGUIUtility.TrTextContent("Exposure Target", "The object used as a target for centering the Exposure's Procedural Mask metering mode when target object option is set (See Exposure Volume Component).");
 
+                public static readonly GUIContent allowDynamicResolution = EditorGUIUtility.TrTextContent("Allow Dynamic Resolution", "Whether to support dynamic resolution.");
                 public const string DLSSFeatureDetectedMsg = "Unity detected NVIDIA Deep Learning Super Sampling and will ignore the Fallback Anti Aliasing Method.";
                 public const string DLSSFeatureNotDetectedMsg = "Unity cannot detect NVIDIA Deep Learning Super Sampling and will use the Fallback Anti Aliasing Method instead.";
                 public const string DLSSNotEnabledInQualityAsset = "The quality asset in this project does not have NVIDIA Deep Learning Super Sampling (DLSS) enabled. DLSS will not be running on this camera.";
                 public static readonly GUIContent DLSSAllow = EditorGUIUtility.TrTextContent("Allow DLSS", "Allows DLSS for this camera. For the effect to be enabled, it must be set in the quality asset of this project.");
-                public static readonly GUIContent DLSSUseCameraQualitySettings = EditorGUIUtility.TrTextContent("Use Camera Quality", "");
-                public static readonly GUIContent DLSSUseCameraAttributes = EditorGUIUtility.TrTextContent("Use Camera Attributes", "");
+                public static readonly GUIContent DLSSCustomQualitySettings = EditorGUIUtility.TrTextContent("Use Custom Quality", "");
+                public static readonly GUIContent DLSSUseCustomAttributes = EditorGUIUtility.TrTextContent("Use Custom Attributes", "");
                 public static GUIContent overrideSettingText { get; } = EditorGUIUtility.TrTextContent("", "If enabled, this camera setting will be used instead of the one specified in the quality asset of this project.");
             }
         }
