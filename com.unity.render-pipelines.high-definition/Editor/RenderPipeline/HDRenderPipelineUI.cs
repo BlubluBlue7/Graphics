@@ -506,6 +506,12 @@ namespace UnityEditor.Rendering.HighDefinition
                 if (!serialized.renderPipelineSettings.dynamicResolutionSettings.forcePercentage.hasMultipleDifferentValues
                     && !serialized.renderPipelineSettings.dynamicResolutionSettings.forcePercentage.boolValue)
                 {
+#if ENABLE_NVIDIA_MODULE
+                    if (dlssDetected && serialized.renderPipelineSettings.dynamicResolutionSettings.enableDLSS.boolValue && serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSUseOptimalSettings.boolValue)
+                    {
+                        EditorGUILayout.HelpBox(Styles.DLSSIgnorePercentages, MessageType.Info);
+                    }
+#endif
                     float minPercentage = serialized.renderPipelineSettings.dynamicResolutionSettings.minPercentage.floatValue;
                     float maxPercentage = serialized.renderPipelineSettings.dynamicResolutionSettings.maxPercentage.floatValue;
 
