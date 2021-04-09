@@ -122,7 +122,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public static bool SetupFeature(bool resetDeviceIfCreated = true)
         {
 #if ENABLE_NVIDIA_MODULE
-            if (!NVIDIA.Plugins.IsPluginLoaded(NVIDIA.Plugins.Plugin.NVUnityPlugin))
+            if (!NVIDIA.NVUnityPlugin.IsLoaded())
                 return false;
 
             if (s_ExpectedDeviceVersion != NVIDIA.GraphicsDevice.version)

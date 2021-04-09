@@ -78,7 +78,7 @@ namespace UnityEngine.NVIDIA
             }
             else if (device == null)
             {
-                bool isPluginLoaded = Plugins.IsPluginLoaded(Plugins.Plugin.NVUnityPlugin);
+                bool isPluginLoaded = NVUnityPlugin.IsLoaded();
                 data.deviceState = isPluginLoaded ?  DeviceState.DeviceCreationFailed : DeviceState.MissingPluginDLL;
                 data.dlssSupported = false;
                 data.dlssFeatureInfos = null;
