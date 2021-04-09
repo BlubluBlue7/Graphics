@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.Rendering;
 
 #if ENABLE_NVIDIA_MODULE
-namespace Unity.External.NVIDIA
+namespace UnityEngine.NVIDIA
 {
     public class DebugView
     {
@@ -29,7 +29,7 @@ namespace Unity.External.NVIDIA
         {
             public DeviceState deviceState = DeviceState.Unknown;
             public bool dlssSupported = false;
-            public FeatureDebugInfos debugInfos;
+            public GraphicsDeviceDebugInfo debugInfos;
             public Container<DLSSDebugFeatureInfos>[] dlssFeatureInfos = null;
         }
 
@@ -42,7 +42,7 @@ namespace Unity.External.NVIDIA
 
         public void Update()
         {
-            Device device = NVIDIA.Device.GetDevice();
+            GraphicsDevice device = NVIDIA.GraphicsDevice.device;
             bool panelIsOpen = DebugManager.instance.displayRuntimeUI || DebugManager.instance.displayEditorUI;
             if (device != null)
             {
@@ -63,7 +63,7 @@ namespace Unity.External.NVIDIA
                 {
                     data.deviceState = DeviceState.Active;
                     data.dlssSupported = device.IsFeatureAvailable(NVIDIA.Feature.DLSS);
-                    data.debugInfos = device.GetFeatureDebugInfos(m_DebugViewId);
+                    data.debugInfos = device.GetDebugInfo(m_DebugViewId);
                     data.dlssFeatureInfos = TranslateDlssFeatureArray(data.dlssFeatureInfos, data.debugInfos);
                 }
                 else
@@ -82,7 +82,7 @@ namespace Unity.External.NVIDIA
             UpdateDebugUITable();
         }
 
-        private static Container<DLSSDebugFeatureInfos>[] TranslateDlssFeatureArray(Container<DLSSDebugFeatureInfos>[] oldArray, in FeatureDebugInfos rawDebugInfos)
+        private static Container<DLSSDebugFeatureInfos>[] TranslateDlssFeatureArray(Container<DLSSDebugFeatureInfos>[] oldArray, in GraphicsDeviceDebugInfo rawDebugInfos)
         {
             if (rawDebugInfos.dlssInfosCount == 0)
                 return null;
@@ -212,15 +212,15 @@ namespace Unity.External.NVIDIA
                             },
                             new DebugUI.Value()
                             {
-                                getter = () => resToString(c.data.initData.InputRTWidth, c.data.initData.InputRTHeight)
+                                getter = () => resToString(c.data.execData.subrectWidth, c.data.execData.subrectHeight)
                             },
                             new DebugUI.Value()
                             {
-                                getter = () => resToString(c.data.initData.OutputRTWidth, c.data.initData.OutputRTHeight)
+                                getter = () => resToString(c.data.initData.outputRTWidth, c.data.initData.outputRTHeight)
                             },
                             new DebugUI.Value()
                             {
-                                getter = () => c.data.initData.Quality.ToString()
+                                getter = () => c.data.initData.quality.ToString()
                             }
                         }
                     };

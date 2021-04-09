@@ -467,7 +467,7 @@ namespace UnityEditor.Rendering.HighDefinition
                     ++EditorGUI.indentLevel;
                     var v = EditorGUILayout.EnumPopup(
                         Styles.DLSSQualitySettingContent,
-                        (Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value)
+                        (UnityEngine.NVIDIA.DLSSQuality)
                         serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting.intValue);
 
                     serialized.renderPipelineSettings.dynamicResolutionSettings.DLSSPerfQualitySetting.intValue = (int)(object)v;

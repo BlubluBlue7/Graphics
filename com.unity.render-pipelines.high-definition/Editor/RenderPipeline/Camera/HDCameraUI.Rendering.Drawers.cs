@@ -75,8 +75,7 @@ namespace UnityEditor.Rendering.HighDefinition
                         EditorGUI.indentLevel++;
                         var v = EditorGUILayout.EnumPopup(
                             HDRenderPipelineUI.Styles.DLSSQualitySettingContent,
-                            (Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value)
-                            p.deepLearningSuperSamplingQuality.intValue);
+                            (UnityEngine.NVIDIA.DLSSQuality)p.deepLearningSuperSamplingQuality.intValue);
                         p.deepLearningSuperSamplingQuality.intValue = (int)(object)v;
                         EditorGUI.indentLevel--;
                     }

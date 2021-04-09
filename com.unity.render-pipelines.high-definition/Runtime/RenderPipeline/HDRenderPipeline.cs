@@ -1079,7 +1079,7 @@ namespace UnityEngine.Rendering.HighDefinition
             }
 
 #if ENABLE_NVIDIA_MODULE
-            Unity.External.NVIDIA.DebugView.instance.Update();
+            UnityEngine.NVIDIA.DebugView.instance.Update();
 #endif
 
             // This syntax is awful and hostile to debugging, please don't use it...

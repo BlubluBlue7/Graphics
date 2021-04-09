@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
 namespace UnityEngine.Rendering.HighDefinition
@@ -121,10 +122,10 @@ namespace UnityEngine.Rendering.HighDefinition
         public static bool SetupFeature(bool resetDeviceIfCreated = true)
         {
 #if ENABLE_NVIDIA_MODULE
-            if (!Unity.External.NVIDIA.Plugins.IsPluginLoaded(Unity.External.NVIDIA.Plugins.Plugin.NVUnityPlugin))
+            if (!NVIDIA.Plugins.IsPluginLoaded(NVIDIA.Plugins.Plugin.NVUnityPlugin))
                 return false;
 
-            if (ExpectedDeviceVersion != Unity.External.NVIDIA.Device.GetVersion())
+            if (ExpectedDeviceVersion != NVIDIA.GraphicsDevice.version)
             {
                 Debug.LogWarning("Cannot instantiate NVIDIA device because the version HDRP expects does not match the backend version.");
                 return false;
@@ -133,14 +134,14 @@ namespace UnityEngine.Rendering.HighDefinition
             if (!SystemInfo.graphicsDeviceVendor.ToLower().Contains("nvidia"))
                 return false;
 
-            var device = Unity.External.NVIDIA.Device.CreateDevice();
+            var device = NVIDIA.GraphicsDevice.CreateGraphicsDevice();
             if (device == null)
                 return false;
 
             if (resetDeviceIfCreated)
-                Unity.External.NVIDIA.DebugView.instance.Reset();
+                NVIDIA.DebugView.instance.Reset();
 
-            return device.IsFeatureAvailable(Unity.External.NVIDIA.Feature.DLSS);
+            return device.IsFeatureAvailable(NVIDIA.Feature.DLSS);
 #else
             return false;
 #endif
@@ -154,7 +155,7 @@ namespace UnityEngine.Rendering.HighDefinition
             if (!SetupFeature(false))
                 return null;
 
-            dlssPass = new DLSSPass(Unity.External.NVIDIA.Device.GetDevice());
+            dlssPass = new DLSSPass(NVIDIA.GraphicsDevice.device);
 #endif
             return dlssPass;
         }
@@ -193,9 +194,9 @@ namespace UnityEngine.Rendering.HighDefinition
         private CommandBuffer m_CommandBuffer = new CommandBuffer();
         private UInt64 m_FrameId = 0;
 
-        private Unity.External.NVIDIA.Device m_Device = null;
+        private NVIDIA.GraphicsDevice m_Device = null;
 
-        private DLSSPass(Unity.External.NVIDIA.Device device)
+        private DLSSPass(NVIDIA.GraphicsDevice device)
         {
             m_Device = device;
         }
@@ -250,7 +251,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
         private struct DlssViewData
         {
-            public Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value perfQuality;
+            public NVIDIA.DLSSQuality  perfQuality;
             public DLSSPass.Resolution inputRes;
             public DLSSPass.Resolution outputRes;
             public float sharpness;
@@ -265,41 +266,41 @@ namespace UnityEngine.Rendering.HighDefinition
 
         private struct OptimalSettingsRequest
         {
-            public Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value quality;
+            public NVIDIA.DLSSQuality quality;
             public Rect viewport;
-            public Unity.External.NVIDIA.OptimalDLSSSettingsData optimalSettings;
+            public NVIDIA.OptimalDLSSSettingsData optimalSettings;
         }
 
-        private static bool IsOptimalSettingsValid(in Unity.External.NVIDIA.OptimalDLSSSettingsData optimalSettings)
+        private static bool IsOptimalSettingsValid(in NVIDIA.OptimalDLSSSettingsData optimalSettings)
         {
-            return optimalSettings.MaxHeight > optimalSettings.MinHeight
-                && optimalSettings.MaxWidth > optimalSettings.MinWidth
-                && optimalSettings.MaxWidth != 0
-                && optimalSettings.MaxHeight != 0
-                && optimalSettings.MinWidth != 0
-                && optimalSettings.MinHeight != 0;
+            return optimalSettings.maxHeight > optimalSettings.minHeight
+                && optimalSettings.maxWidth  > optimalSettings.minWidth
+                && optimalSettings.maxWidth  != 0
+                && optimalSettings.maxHeight != 0
+                && optimalSettings.minWidth  != 0
+                && optimalSettings.minHeight != 0;
         }
 
         private class ViewState
         {
-            private Unity.External.NVIDIA.DLSSCommand m_DlssCommand = null;
-            private Unity.External.NVIDIA.Device m_Device;
+            private NVIDIA.DLSSContext m_DlssContext = null;
+            private NVIDIA.GraphicsDevice m_Device;
             private DlssViewData m_Data = new DlssViewData();
             private bool m_UsingOptimalSettings = false;
             private bool m_OptimalSettingsRequested = false;
             private OptimalSettingsRequest m_OptimalSettingsRequest = new OptimalSettingsRequest();
 
-            public Unity.External.NVIDIA.DLSSCommand DLSSCommand { get { return m_DlssCommand; } }
+            public NVIDIA.DLSSContext DLSSContext { get { return m_DlssContext; } }
             public bool RequestedOptimalSettings { get { return m_OptimalSettingsRequested; } }
             public OptimalSettingsRequest OptimalSettingsRequestData { get { return m_OptimalSettingsRequest; } }
 
-            public ViewState(Unity.External.NVIDIA.Device device)
+            public ViewState(NVIDIA.GraphicsDevice device)
             {
                 m_Device = device;
-                m_DlssCommand = null;
+                m_DlssContext = null;
             }
 
-            public void RequestUseOptimalSetting(Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value quality, Rect viewport, in Unity.External.NVIDIA.OptimalDLSSSettingsData optimalSettings)
+            public void RequestUseOptimalSetting(NVIDIA.DLSSQuality quality, Rect viewport, in NVIDIA.OptimalDLSSSettingsData optimalSettings)
             {
                 m_OptimalSettingsRequested = true;
                 m_OptimalSettingsRequest.quality = quality;
@@ -314,12 +315,12 @@ namespace UnityEngine.Rendering.HighDefinition
 
             private bool ShouldUseOptimalSettings()
             {
-                if (!m_OptimalSettingsRequested || m_DlssCommand == null)
+                if (!m_OptimalSettingsRequested || m_DlssContext == null)
                     return false;
 
-                return m_DlssCommand.InitData.Quality == m_OptimalSettingsRequest.quality
-                    && m_DlssCommand.InitData.OutputRTHeight == (uint)m_OptimalSettingsRequest.viewport.height
-                    && m_DlssCommand.InitData.OutputRTWidth == (uint)m_OptimalSettingsRequest.viewport.width
+                return m_DlssContext.initData.quality == m_OptimalSettingsRequest.quality
+                    && m_DlssContext.initData.outputRTHeight == (uint)m_OptimalSettingsRequest.viewport.height
+                    && m_DlssContext.initData.outputRTWidth  == (uint)m_OptimalSettingsRequest.viewport.width
                     && IsOptimalSettingsValid(m_OptimalSettingsRequest.optimalSettings);
             }
 
@@ -333,30 +334,29 @@ namespace UnityEngine.Rendering.HighDefinition
                     (viewData.inputRes != m_Data.inputRes && !m_UsingOptimalSettings) ||
                     (viewData.CanFitInput(m_Data.inputRes) && m_UsingOptimalSettings) ||
                     viewData.perfQuality != m_Data.perfQuality ||
-                    m_DlssCommand == null ||
+                    m_DlssContext == null ||
                     shouldUseOptimalSettings != m_UsingOptimalSettings)
                 {
                     isNew = true;
 
-                    if (m_DlssCommand != null)
+                    if (m_DlssContext != null)
                     {
-                        m_Device.DestroyFeature(cmdBuffer, m_DlssCommand);
-                        m_DlssCommand = null;
+                        m_Device.DestroyFeature(cmdBuffer, m_DlssContext);
+                        m_DlssContext = null;
                     }
 
-                    var settings = new Unity.External.NVIDIA.InitDLSSCmdData();
-                    settings.RTX_Value = 0;
-                    settings.SetFlag(Unity.External.NVIDIA.NVSDK_NGX_DLSS_Feature_Flags.IsHDR, true);
-                    settings.SetFlag(Unity.External.NVIDIA.NVSDK_NGX_DLSS_Feature_Flags.MVLowRes, true);
-                    settings.SetFlag(Unity.External.NVIDIA.NVSDK_NGX_DLSS_Feature_Flags.DepthInverted, true);
-                    settings.SetFlag(Unity.External.NVIDIA.NVSDK_NGX_DLSS_Feature_Flags.DoSharpening, true);
-                    settings.InputRTWidth = viewData.inputRes.width;
-                    settings.InputRTHeight = viewData.inputRes.height;
-                    settings.OutputRTWidth = viewData.outputRes.width;
-                    settings.OutputRTHeight = viewData.outputRes.height;
-                    settings.Quality = viewData.perfQuality;
+                    var settings = new NVIDIA.InitDLSSCmdData();
+                    settings.SetFlag(NVIDIA.DLSSFeatureFlags.IsHDR, true);
+                    settings.SetFlag(NVIDIA.DLSSFeatureFlags.MVLowRes, true);
+                    settings.SetFlag(NVIDIA.DLSSFeatureFlags.DepthInverted, true);
+                    settings.SetFlag(NVIDIA.DLSSFeatureFlags.DoSharpening, true);
+                    settings.inputRTWidth   = viewData.inputRes.width;
+                    settings.inputRTHeight  = viewData.inputRes.height;
+                    settings.outputRTWidth  = viewData.outputRes.width;
+                    settings.outputRTHeight = viewData.outputRes.height;
+                    settings.quality = viewData.perfQuality;
                     m_UsingOptimalSettings = shouldUseOptimalSettings;
-                    m_DlssCommand = m_Device.CreateFeature(cmdBuffer, settings);
+                    m_DlssContext = m_Device.CreateFeature(cmdBuffer, settings);
                 }
 
                 m_Data = viewData;
@@ -370,36 +370,40 @@ namespace UnityEngine.Rendering.HighDefinition
                 RenderTexture output,
                 CommandBuffer cmdBuffer)
             {
-                if (m_DlssCommand == null)
+                if (m_DlssContext == null)
                     return;
 
-                m_DlssCommand.ExecuteData.Sharpness = m_UsingOptimalSettings ? m_OptimalSettingsRequest.optimalSettings.sharpness : m_Data.sharpness;
-                m_DlssCommand.ExecuteData.MVScaleX = -((float)m_Data.inputRes.width);
-                m_DlssCommand.ExecuteData.MVScaleY = -((float)m_Data.inputRes.height);
-                m_DlssCommand.ExecuteData.SubrectOffsetX = 0;
-                m_DlssCommand.ExecuteData.SubrectOffsetY = 0;
-                m_DlssCommand.ExecuteData.SubrectWidth = m_Data.inputRes.width;
-                m_DlssCommand.ExecuteData.SubrectHeight = m_Data.inputRes.height;
-                m_DlssCommand.ExecuteData.JitterOffsetX = m_Data.jitterX;
-                m_DlssCommand.ExecuteData.JitterOffsetY = m_Data.jitterY;
-                m_DlssCommand.ExecuteData.PreExposure = 1.0f;
-                m_DlssCommand.ExecuteData.InvertYAxis = 1u;
-                m_DlssCommand.ExecuteData.InvertXAxis = 0u;
-                m_DlssCommand.ExecuteData.Reset = m_Data.reset ? 1 : 0;
+                m_DlssContext.executeData.sharpness = m_UsingOptimalSettings ? m_OptimalSettingsRequest.optimalSettings.sharpness : m_Data.sharpness;
+                m_DlssContext.executeData.mvScaleX = -((float)m_Data.inputRes.width);
+                m_DlssContext.executeData.mvScaleY = -((float)m_Data.inputRes.height);
+                m_DlssContext.executeData.subrectOffsetX = 0;
+                m_DlssContext.executeData.subrectOffsetY = 0;
+                m_DlssContext.executeData.subrectWidth = m_Data.inputRes.width;
+                m_DlssContext.executeData.subrectHeight = m_Data.inputRes.height;
+                m_DlssContext.executeData.jitterOffsetX = m_Data.jitterX;
+                m_DlssContext.executeData.jitterOffsetY = m_Data.jitterY;
+                m_DlssContext.executeData.preExposure = 1.0f;
+                m_DlssContext.executeData.invertYAxis = 1u;
+                m_DlssContext.executeData.invertXAxis = 0u;
+                m_DlssContext.executeData.reset = m_Data.reset ? 1 : 0;
 
-                m_Device.SetTexture(cmdBuffer, m_DlssCommand, Unity.External.NVIDIA.ExecuteDLSSCmdData.Textures.ColorInput, source);
-                m_Device.SetTexture(cmdBuffer, m_DlssCommand, Unity.External.NVIDIA.ExecuteDLSSCmdData.Textures.ColorOutput, output);
-                m_Device.SetTexture(cmdBuffer, m_DlssCommand, Unity.External.NVIDIA.ExecuteDLSSCmdData.Textures.Depth, depth);
-                m_Device.SetTexture(cmdBuffer, m_DlssCommand, Unity.External.NVIDIA.ExecuteDLSSCmdData.Textures.MotionVectors, motionVectors);
-                m_Device.ExecuteCommand(cmdBuffer, m_DlssCommand);
+                var textureTable = new NVIDIA.DLSSTextureTable()
+                {
+                    colorInput = source,
+                    colorOutput = output,
+                    depth = depth,
+                    motionVectors = motionVectors
+                };
+
+                m_Device.ExecuteDLSS(cmdBuffer, m_DlssContext, textureTable);
             }
 
             public void Cleanup(CommandBuffer cmdBuffer)
             {
-                if (m_DlssCommand != null)
+                if (m_DlssContext != null)
                 {
-                    m_Device.DestroyFeature(cmdBuffer, m_DlssCommand);
-                    m_DlssCommand = null;
+                    m_Device.DestroyFeature(cmdBuffer, m_DlssContext);
+                    m_DlssContext = null;
                 }
             }
         }
@@ -408,12 +412,12 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             WeakReference<Camera> m_CamReference = null;
             ViewState[] m_Views = null;
-            Unity.External.NVIDIA.Device m_Device = null;
+            NVIDIA.GraphicsDevice m_Device = null;
 
             public ViewState[] ViewStates { get { return m_Views; } }
             public UInt64 LastFrameId { set; get; }
 
-            public CameraState(Unity.External.NVIDIA.Device device, Camera camera)
+            public CameraState(NVIDIA.GraphicsDevice device, Camera camera)
             {
                 m_CamReference = new WeakReference<Camera>(camera);
                 m_Device = device;
@@ -572,7 +576,7 @@ namespace UnityEngine.Rendering.HighDefinition
             if (cameraState.ViewStates == null || cameraState.ViewStates.Length == 0)
                 return;
 
-            if (cameraState.ViewStates[0].DLSSCommand == null)
+            if (cameraState.ViewStates[0].DLSSContext == null)
                 return;
 
             if (!enabled)
@@ -581,9 +585,9 @@ namespace UnityEngine.Rendering.HighDefinition
             }
             else
             {
-                var usedQuality = cameraState.ViewStates[0].DLSSCommand.InitData.Quality;
+                var usedQuality = cameraState.ViewStates[0].DLSSContext.initData.quality;
                 Rect finalViewport = xrPass != null && xrPass.enabled ? xrPass.GetViewport() : new Rect(camera.pixelRect.x, camera.pixelRect.y, camera.pixelWidth, camera.pixelHeight);
-                Unity.External.NVIDIA.OptimalDLSSSettingsData optimalSettings = new Unity.External.NVIDIA.OptimalDLSSSettingsData();
+                NVIDIA.OptimalDLSSSettingsData optimalSettings = new NVIDIA.OptimalDLSSSettingsData();
 
                 if (!m_Device.GetOptimalSettings((uint)finalViewport.width, (uint)finalViewport.height, usedQuality, out optimalSettings))
                 {
@@ -593,8 +597,8 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 if (IsOptimalSettingsValid(optimalSettings))
                 {
-                    dynamicResolutionSettings.maxPercentage = Mathf.Min((float)optimalSettings.MaxWidth / finalViewport.width, (float)optimalSettings.MaxHeight / finalViewport.height);
-                    dynamicResolutionSettings.minPercentage = Mathf.Max((float)optimalSettings.MinWidth / finalViewport.width, (float)optimalSettings.MinHeight / finalViewport.height);
+                    dynamicResolutionSettings.maxPercentage = Mathf.Min((float)optimalSettings.maxWidth / finalViewport.width, (float)optimalSettings.maxHeight / finalViewport.height);
+                    dynamicResolutionSettings.minPercentage = Mathf.Max((float)optimalSettings.minWidth / finalViewport.width, (float)optimalSettings.minHeight / finalViewport.height);
                     m_SelectedCameraKey = cameraKey;
                     DynamicResolutionHandler.SetSystemDynamicResScaler(ScaleFn, DynamicResScalePolicyType.ReturnsPercentage);
                     DynamicResolutionHandler.SetActiveDynamicScalerSlot(DynamicResScalerSlot.System);
@@ -650,7 +654,7 @@ namespace UnityEngine.Rendering.HighDefinition
             var dlssViewData = new DlssViewData();
 
             dlssViewData.perfQuality =
-                (Unity.External.NVIDIA.NVSDK_NGX_PerfQuality_Value)(
+                (NVIDIA.DLSSQuality)(
                     parameters.hdCamera.deepLearningSuperSamplingUseCustomQualitySettings
                     ? parameters.hdCamera.deepLearningSuperSamplingQuality
                     : parameters.drsSettings.DLSSPerfQualitySetting);

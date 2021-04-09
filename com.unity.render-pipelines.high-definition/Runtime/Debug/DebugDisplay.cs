@@ -1805,7 +1805,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
 
 #if ENABLE_NVIDIA_MODULE
-            widgetList.Add(Unity.External.NVIDIA.DebugView.instance.CreateWidget());
+            widgetList.Add(UnityEngine.NVIDIA.DebugView.instance.CreateWidget());
 #endif
 
             m_DebugRenderingItems = widgetList.ToArray();
