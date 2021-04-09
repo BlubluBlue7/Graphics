@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.Rendering;
 
 #if ENABLE_NVIDIA_MODULE
@@ -9,8 +10,7 @@ namespace UnityEngine.NVIDIA
     {
         public static DebugView instance = new DebugView();
 
-        private const uint InvalidId = 0xffffffff;
-        private uint m_DebugViewId = InvalidId;
+        private GraphicsDeviceDebugView m_DebugView = null;
 
         public enum DeviceState
         {
@@ -29,7 +29,6 @@ namespace UnityEngine.NVIDIA
         {
             public DeviceState deviceState = DeviceState.Unknown;
             public bool dlssSupported = false;
-            public GraphicsDeviceDebugInfo debugInfos;
             public Container<DLSSDebugFeatureInfos>[] dlssFeatureInfos = null;
         }
 
@@ -37,7 +36,13 @@ namespace UnityEngine.NVIDIA
 
         public void Reset()
         {
-            m_DebugViewId = InvalidId;
+            GraphicsDevice device = NVIDIA.GraphicsDevice.device;
+            if (device != null && m_DebugView != null)
+            {
+                device.DeleteDebugView(m_DebugView);
+            }
+
+            m_DebugView = null;
         }
 
         public void Update()
@@ -46,25 +51,25 @@ namespace UnityEngine.NVIDIA
             bool panelIsOpen = DebugManager.instance.displayRuntimeUI || DebugManager.instance.displayEditorUI;
             if (device != null)
             {
-                if (panelIsOpen && m_DebugViewId == InvalidId)
+                if (panelIsOpen && m_DebugView == null)
                 {
-                    m_DebugViewId = device.CreateDebugView();
+                    m_DebugView = device.CreateDebugView();
                 }
-                else if (!panelIsOpen && m_DebugViewId != InvalidId)
+                else if (!panelIsOpen && m_DebugView != null)
                 {
-                    device.DeleteDebugView(m_DebugViewId);
-                    m_DebugViewId = InvalidId;
+                    device.DeleteDebugView(m_DebugView);
+                    m_DebugView = null;
                 }
             }
 
             if (device != null)
             {
-                if (m_DebugViewId != InvalidId)
+                if (m_DebugView != null)
                 {
                     data.deviceState = DeviceState.Active;
                     data.dlssSupported = device.IsFeatureAvailable(NVIDIA.Feature.DLSS);
-                    data.debugInfos = device.GetDebugInfo(m_DebugViewId);
-                    data.dlssFeatureInfos = TranslateDlssFeatureArray(data.dlssFeatureInfos, data.debugInfos);
+                    device.UpdateDebugView(m_DebugView);
+                    data.dlssFeatureInfos = TranslateDlssFeatureArray(data.dlssFeatureInfos, m_DebugView);
                 }
                 else
                 {
@@ -82,27 +87,27 @@ namespace UnityEngine.NVIDIA
             UpdateDebugUITable();
         }
 
-        private static Container<DLSSDebugFeatureInfos>[] TranslateDlssFeatureArray(Container<DLSSDebugFeatureInfos>[] oldArray, in GraphicsDeviceDebugInfo rawDebugInfos)
+        private static Container<DLSSDebugFeatureInfos>[] TranslateDlssFeatureArray(Container<DLSSDebugFeatureInfos>[] oldArray, in GraphicsDeviceDebugView debugView)
         {
-            if (rawDebugInfos.dlssInfosCount == 0)
+            if (!debugView.dlssFeatureInfos.Any())
                 return null;
 
             Container<DLSSDebugFeatureInfos>[] targetArray = oldArray;
-            if ((targetArray == null || targetArray.Length != rawDebugInfos.dlssInfosCount))
+            int dlssFeatureInfosCount = debugView.dlssFeatureInfos.Count();
+            if (targetArray == null || targetArray.Length != dlssFeatureInfosCount)
             {
-                targetArray = new Container<DLSSDebugFeatureInfos>[rawDebugInfos.dlssInfosCount];
+                targetArray = new Container<DLSSDebugFeatureInfos>[dlssFeatureInfosCount];
             }
 
             //copy data over
-            unsafe
+            int i = 0;
+            foreach (var featureInfo in debugView.dlssFeatureInfos)
             {
-                for (int i = 0; i < rawDebugInfos.dlssInfosCount; ++i)
-                {
-                    if (targetArray[i] == null)
-                        targetArray[i] = new Container<DLSSDebugFeatureInfos>();
-                    targetArray[i].data = rawDebugInfos.dlssInfos[i];
-                }
+                if (targetArray[i] == null)
+                    targetArray[i] = new Container<DLSSDebugFeatureInfos>();
+                targetArray[i++].data = featureInfo;
             }
+
 
             return targetArray;
         }
@@ -152,12 +157,12 @@ namespace UnityEngine.NVIDIA
                     new DebugUI.Value()
                     {
                         displayName = "NVUnityPlugin Version",
-                        getter = () => data.debugInfos.NVDeviceVersion.ToString("X2"),
+                        getter = () => m_DebugView == null ? "-" : m_DebugView.deviceVersion.ToString("X2"),
                     },
                     new DebugUI.Value()
                     {
                         displayName = "NGX API Version",
-                        getter = () => data.debugInfos.NGXVersion.ToString("X2"),
+                        getter = () => m_DebugView == null ? "-" : m_DebugView.ngxVersion.ToString("X2"),
                     },
                     new DebugUI.Value()
                     {

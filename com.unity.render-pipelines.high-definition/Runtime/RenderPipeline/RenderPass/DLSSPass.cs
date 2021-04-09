@@ -8,7 +8,7 @@ namespace UnityEngine.Rendering.HighDefinition
     internal class DLSSPass
     {
         #region Render Graph Helper
-        public static uint ExpectedDeviceVersion = 0x03;
+        private static uint s_ExpectedDeviceVersion = 0x04;
 
         public struct ViewResourceHandles
         {
@@ -125,7 +125,7 @@ namespace UnityEngine.Rendering.HighDefinition
             if (!NVIDIA.Plugins.IsPluginLoaded(NVIDIA.Plugins.Plugin.NVUnityPlugin))
                 return false;
 
-            if (ExpectedDeviceVersion != NVIDIA.GraphicsDevice.version)
+            if (s_ExpectedDeviceVersion != NVIDIA.GraphicsDevice.version)
             {
                 Debug.LogWarning("Cannot instantiate NVIDIA device because the version HDRP expects does not match the backend version.");
                 return false;
